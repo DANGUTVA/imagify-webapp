@@ -1,7 +1,6 @@
 import { ActionButtons } from "./ActionButtons";
-import { CameraDialog } from "./CameraDialog";
-import { ImagePreview } from "./ImagePreview";
-import { useCameraHandling } from "./useCameraHandling";
+import { ExpenseImageSection } from "./ExpenseImageSection";
+import { useExpenseFormActions } from "./hooks/useExpenseFormActions";
 
 interface ExpenseFormActionsProps {
   onSubmit: () => void;
@@ -10,39 +9,15 @@ interface ExpenseFormActionsProps {
 export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
   const {
     isOpen,
-    setIsOpen,
     videoRef,
     capturedImage,
-    setCapturedImage,
-    handleCapture,
-    resetState
-  } = useCameraHandling();
-
-  const handleCameraClick = () => {
-    setCapturedImage(null);
-    setIsOpen(true);
-  };
-
-  const handleRetake = () => {
-    setCapturedImage(null);
-    if (!isOpen) {
-      setIsOpen(true);
-    }
-  };
-
-  const handleDeleteImage = () => {
-    setCapturedImage(null);
-    setIsOpen(false);
-  };
-
-  const handleDialogClose = () => {
-    setIsOpen(false);
-  };
-
-  const handleSubmit = () => {
-    onSubmit();
-    resetState();
-  };
+    handleCameraClick,
+    handleRetake,
+    handleDeleteImage,
+    handleDialogClose,
+    handleSubmit,
+    handleCapture
+  } = useExpenseFormActions({ onSubmit });
 
   return (
     <div className="flex flex-col gap-4">
@@ -51,19 +26,14 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
         onCameraClick={handleCameraClick}
       />
 
-      {capturedImage && (
-        <ImagePreview
-          imageUrl={capturedImage}
-          onRetake={handleRetake}
-          onDelete={handleDeleteImage}
-        />
-      )}
-
-      <CameraDialog
+      <ExpenseImageSection
         isOpen={isOpen}
         onClose={handleDialogClose}
         onCapture={handleCapture}
         videoRef={videoRef}
+        capturedImage={capturedImage}
+        onRetake={handleRetake}
+        onDelete={handleDeleteImage}
       />
     </div>
   );
