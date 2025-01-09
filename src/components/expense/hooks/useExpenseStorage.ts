@@ -14,27 +14,19 @@ export const useExpenseStorage = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      const { data: files, error: listError } = await supabase.storage
-        .from('receipts')
-        .list('', {
-          limit: 1,
-          search: `receipt-${expenseId}.jpg`
-        });
-
-      if (listError) {
-        throw new Error('Error al buscar la imagen');
-      }
-
-      if (!files || files.length === 0) {
-        throw new Error('No se encontró la imagen para este gasto');
-      }
-
+      // Get the public URL directly without checking if file exists first
       const { data: urlData } = supabase.storage
         .from('receipts')
         .getPublicUrl(`receipt-${expenseId}.jpg`);
 
       if (!urlData.publicUrl) {
         throw new Error('Error al obtener la URL de la imagen');
+      }
+
+      // Verify if the image exists by making a HEAD request
+      const response = await fetch(urlData.publicUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error('No se encontró la imagen para este gasto');
       }
 
       setSelectedImage(urlData.publicUrl);
