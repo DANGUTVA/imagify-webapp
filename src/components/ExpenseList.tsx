@@ -64,6 +64,7 @@ export const ExpenseList = () => {
               <TableHead>FECHA</TableHead>
               <TableHead>DESCRIPCIÓN</TableHead>
               <TableHead className="hidden md:table-cell">CENTRO DE COSTO</TableHead>
+              <TableHead>CÓDIGO DDI</TableHead>
               <TableHead className="text-right">MONTO</TableHead>
               <TableHead className="text-right">ACCIONES</TableHead>
             </TableRow>
@@ -77,6 +78,7 @@ export const ExpenseList = () => {
                 </TableCell>
                 <TableCell>{expense.description}</TableCell>
                 <TableCell className="hidden md:table-cell">{expense.costCenter}</TableCell>
+                <TableCell>{expense.ddiCode}</TableCell>
                 <TableCell className="text-right">
                   ₡
                   {expense.amount.toLocaleString("es-CR", {

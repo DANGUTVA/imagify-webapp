@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Camera, Plus } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Select,
   SelectContent,
@@ -24,8 +24,13 @@ export const ExpenseForm = () => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [newCostCenter, setNewCostCenter] = useState("");
+  const [ddiCode, setDdiCode] = useState({
+    part1: "",
+    part2: "",
+    part3: "",
+    part4: "",
+  });
 
-  // Idealmente, esto debería venir del contexto global o una API
   const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
 
   const handleAddNewCostCenter = () => {
@@ -55,17 +60,21 @@ export const ExpenseForm = () => {
     e.preventDefault();
     if (!description || !costCenter || !amount) return;
 
+    const formattedDdiCode = `DDI-${ddiCode.part1}-${ddiCode.part2}-${ddiCode.part3}`;
+
     addExpense({
       description,
       costCenter,
       amount: parseFloat(amount),
       date,
+      ddiCode: formattedDdiCode,
     });
 
     setDescription("");
     setCostCenter("");
     setAmount("");
     setDate(new Date().toISOString().split("T")[0]);
+    setDdiCode({ part1: "", part2: "", part3: "", part4: "" });
   };
 
   return (
@@ -111,37 +120,36 @@ export const ExpenseForm = () => {
           </Select>
         </div>
 
-        {isAddingNew && (
-          <div className="flex gap-2">
-            <Input
-              placeholder="Ingrese el nuevo centro de costo"
-              value={newCostCenter}
-              onChange={(e) => setNewCostCenter(e.target.value)}
-              className="flex-1"
-            />
-            <Button 
-              type="button"
-              onClick={handleAddNewCostCenter} 
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Agregar
-            </Button>
-            <Button 
-              type="button"
-              variant="outline" 
-              onClick={() => setIsAddingNew(false)}
-            >
-              Cancelar
-            </Button>
-          </div>
-        )}
-
         <div>
           <Input
             type="number"
             placeholder="Monto"
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">DDI-</span>
+          <Input
+            className="w-16"
+            maxLength={4}
+            value={ddiCode.part1}
+            onChange={(e) => setDdiCode({ ...ddiCode, part1: e.target.value })}
+          />
+          <span>-</span>
+          <Input
+            className="w-12"
+            maxLength={2}
+            value={ddiCode.part2}
+            onChange={(e) => setDdiCode({ ...ddiCode, part2: e.target.value })}
+          />
+          <span>-</span>
+          <Input
+            className="w-12"
+            maxLength={2}
+            value={ddiCode.part3}
+            onChange={(e) => setDdiCode({ ...ddiCode, part3: e.target.value })}
           />
         </div>
 

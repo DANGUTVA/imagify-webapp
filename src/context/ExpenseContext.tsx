@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState } from "react";
 import { Expense, ExpenseContextType } from "../types/expense";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 const ExpenseContext = createContext<ExpenseContextType | undefined>(undefined);
 
@@ -11,14 +11,16 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
       date: "2024-01-07",
       description: "Parqueo Mtto Correctivo Halcyon",
       costCenter: "600-500-140",
-      amount: 6750.00
+      amount: 6750.00,
+      ddiCode: "DDI-1020-01-25"
     },
     {
       id: 2,
       date: "2024-01-09",
       description: "Parqueo mtto preventivo AMX240 Max Peralta",
       costCenter: "600-600-300",
-      amount: 5000.00
+      amount: 5000.00,
+      ddiCode: "DDI-1020-01-26"
     }
   ]);
   const { toast } = useToast();

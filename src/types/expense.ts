@@ -4,6 +4,7 @@ export interface Expense {
   description: string;
   costCenter: string;
   amount: number;
+  ddiCode: string;
 }
 
 export interface ExpenseContextType {
