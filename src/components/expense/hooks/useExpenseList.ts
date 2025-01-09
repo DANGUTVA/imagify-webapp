@@ -26,21 +26,26 @@ export const useExpenseList = () => {
 
       if (error) throw error;
 
-      // Transformamos los datos y actualizamos el estado
-      const transformedExpenses = data?.map(expense => ({
-        id: expense.id,
-        description: expense.description || '',
-        costCenter: expense.costCenter,
-        amount: expense.amount || 0,
-        date: expense.date || '',
-        ddiCode: expense.ddiCode || 'DDI-000-000-000',
-        created_at: expense.created_at || new Date().toISOString()
-      }));
+      if (data) {
+        // Limpiamos el estado actual
+        expenses.forEach(expense => {
+          deleteExpense(expense.id);
+        });
 
-      // Actualizamos cada gasto en el estado global
-      transformedExpenses?.forEach(expense => {
-        editExpense(expense);
-      });
+        // Agregamos los nuevos gastos
+        data.forEach(expense => {
+          const formattedExpense: Expense = {
+            id: expense.id,
+            description: expense.description || '',
+            costCenter: expense.costCenter,
+            amount: expense.amount || 0,
+            date: expense.date || '',
+            ddiCode: expense.ddiCode || 'DDI-000-000-000',
+            created_at: expense.created_at || new Date().toISOString()
+          };
+          editExpense(formattedExpense);
+        });
+      }
     } catch (error) {
       console.error('Error fetching expenses:', error);
       toast({
@@ -56,6 +61,13 @@ export const useExpenseList = () => {
       await supabase.storage
         .from('receipts')
         .remove([`receipt-${id}.jpg`]);
+
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
 
       await deleteExpense(id);
       
@@ -117,38 +129,36 @@ export const useExpenseList = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      // Primero verificamos si el archivo existe
-      const { data: files, error: listError } = await supabase.storage
-        .from('receipts')
-        .list('', {
-          search: `receipt-${expenseId}`
-        });
+      // Intentamos con diferentes extensiones de archivo
+      const extensions = ['jpg', 'jpeg', 'png'];
+      let imageFile = null;
 
-      if (listError) throw new Error('Error al buscar la imagen');
-      
-      if (!files || files.length === 0) {
+      for (const ext of extensions) {
+        const { data: files } = await supabase.storage
+          .from('receipts')
+          .list('', {
+            search: `receipt-${expenseId}.${ext}`
+          });
+
+        if (files && files.length > 0) {
+          imageFile = files[0];
+          break;
+        }
+      }
+
+      if (!imageFile) {
         throw new Error('No se encontró la imagen para este gasto');
       }
 
-      // Encontramos el archivo correcto (puede ser .jpg, .jpeg, o .png)
-      const receiptFile = files.find(file => 
-        file.name.startsWith(`receipt-${expenseId}`) && 
-        (file.name.endsWith('.jpg') || file.name.endsWith('.jpeg') || file.name.endsWith('.png'))
-      );
-
-      if (!receiptFile) {
-        throw new Error('No se encontró la imagen para este gasto');
-      }
-
-      const { data: publicUrl } = supabase.storage
+      const { data } = supabase.storage
         .from('receipts')
-        .getPublicUrl(receiptFile.name);
+        .getPublicUrl(imageFile.name);
 
-      if (!publicUrl.publicUrl) {
+      if (!data.publicUrl) {
         throw new Error('Error al obtener la URL de la imagen');
       }
 
-      setSelectedImage(publicUrl.publicUrl);
+      setSelectedImage(data.publicUrl);
     } catch (error) {
       console.error('Error:', error);
       toast({
