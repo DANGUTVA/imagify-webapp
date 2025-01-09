@@ -27,12 +27,6 @@ export const useExpenseList = () => {
       if (error) throw error;
 
       if (data) {
-        // Limpiamos el estado actual
-        expenses.forEach(expense => {
-          deleteExpense(expense.id);
-        });
-
-        // Agregamos los nuevos gastos
         data.forEach(expense => {
           const formattedExpense: Expense = {
             id: expense.id,
@@ -58,10 +52,12 @@ export const useExpenseList = () => {
 
   const handleDelete = async (id: string) => {
     try {
+      // Primero eliminamos el archivo de storage si existe
       await supabase.storage
         .from('receipts')
         .remove([`receipt-${id}.jpg`]);
 
+      // Luego eliminamos el registro de la base de datos
       const { error } = await supabase
         .from('expenses')
         .delete()
@@ -69,7 +65,8 @@ export const useExpenseList = () => {
 
       if (error) throw error;
 
-      await deleteExpense(id);
+      // Finalmente actualizamos el estado local
+      deleteExpense(id);
       
       toast({
         title: "Gasto eliminado",
@@ -129,33 +126,19 @@ export const useExpenseList = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      // Intentamos con diferentes extensiones de archivo
-      const extensions = ['jpg', 'jpeg', 'png'];
-      let imageFile = null;
-
-      for (const ext of extensions) {
-        const { data: files } = await supabase.storage
-          .from('receipts')
-          .list('', {
-            search: `receipt-${expenseId}.${ext}`
-          });
-
-        if (files && files.length > 0) {
-          imageFile = files[0];
-          break;
-        }
-      }
-
-      if (!imageFile) {
-        throw new Error('No se encontró la imagen para este gasto');
-      }
-
+      // Intentamos obtener la URL pública directamente
       const { data } = supabase.storage
         .from('receipts')
-        .getPublicUrl(imageFile.name);
+        .getPublicUrl(`receipt-${expenseId}.jpg`);
 
       if (!data.publicUrl) {
         throw new Error('Error al obtener la URL de la imagen');
+      }
+
+      // Verificamos si la imagen existe haciendo una petición HEAD
+      const response = await fetch(data.publicUrl, { method: 'HEAD' });
+      if (!response.ok) {
+        throw new Error('No se encontró la imagen para este gasto');
       }
 
       setSelectedImage(data.publicUrl);
