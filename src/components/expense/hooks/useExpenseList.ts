@@ -33,7 +33,7 @@ export const useExpenseList = () => {
           costCenter: expense.costCenter,
           amount: expense.amount || 0,
           date: expense.date || '',
-          ddiCode: 'DDI-000-000-000',
+          ddiCode: expense.ddiCode || 'DDI-000-000-000',
           created_at: expense.created_at || new Date().toISOString()
         };
         editExpense(completeExpense);
@@ -111,34 +111,24 @@ export const useExpenseList = () => {
   const handleViewImage = async (expenseId: string) => {
     try {
       setIsLoadingImage(true);
+      setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      const { data: existsData, error: existsError } = await supabase.storage
+      const { data: publicUrl } = supabase.storage
         .from('receipts')
-        .list('', {
-          search: `receipt-${expenseId}.jpg`
-        });
+        .getPublicUrl(`receipt-${expenseId}.jpg`);
 
-      if (existsError) throw new Error('Error al verificar la imagen');
-      if (!existsData || existsData.length === 0) {
+      if (!publicUrl.publicUrl) {
+        throw new Error('No se pudo obtener la URL de la imagen');
+      }
+
+      // Verificar si la imagen existe haciendo una petición HEAD
+      const response = await fetch(publicUrl.publicUrl, { method: 'HEAD' });
+      if (!response.ok) {
         throw new Error('No se encontró la imagen');
       }
 
-      const { data: urlData, error: urlError } = await supabase.storage
-        .from('receipts')
-        .createSignedUrl(`receipt-${expenseId}.jpg`, 60);
-
-      if (urlError || !urlData?.signedUrl) {
-        throw new Error('Error al obtener la URL de la imagen');
-      }
-
-      const response = await fetch(urlData.signedUrl);
-      if (!response.ok) {
-        throw new Error('Error al acceder a la imagen');
-      }
-
-      setSelectedImage(urlData.signedUrl);
-      setIsImageDialogOpen(true);
+      setSelectedImage(publicUrl.publicUrl);
     } catch (error) {
       console.error('Error:', error);
       toast({
@@ -146,6 +136,7 @@ export const useExpenseList = () => {
         description: error instanceof Error ? error.message : "Error al cargar la imagen",
         variant: "destructive",
       });
+      setIsImageDialogOpen(false);
     } finally {
       setIsLoadingImage(false);
     }
