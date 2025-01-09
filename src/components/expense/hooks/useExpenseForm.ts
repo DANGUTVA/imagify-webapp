@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useExpenseForm = () => {
   const { addExpense } = useExpenses();
@@ -18,7 +19,7 @@ export const useExpenseForm = () => {
     part3: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
+  const [costCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
 
   const handleAddNewCostCenter = () => {
     if (newCostCenter.trim()) {
@@ -31,7 +32,6 @@ export const useExpenseForm = () => {
         return;
       }
       
-      setCostCenters([...costCenters, newCostCenter.trim()]);
       setCostCenter(newCostCenter.trim());
       setNewCostCenter("");
       setIsAddingNew(false);
@@ -84,25 +84,41 @@ export const useExpenseForm = () => {
     const formattedDdiCode = `DDI-${ddiCode.part1}-${ddiCode.part2}-${ddiCode.part3}`;
 
     try {
-      await addExpense({
-        description,
-        costCenter,
-        amount: parseFloat(amount),
-        date,
-        ddiCode: formattedDdiCode,
-      });
+      const { data, error } = await supabase
+        .from('expenses')
+        .insert([{
+          description,
+          costCenter,
+          amount: parseFloat(amount),
+          date,
+          ddiCode: formattedDdiCode,
+        }])
+        .select()
+        .single();
 
-      // Reset form
-      setDescription("");
-      setCostCenter("");
-      setAmount("");
-      setDate(new Date().toISOString().split("T")[0]);
-      setDdiCode({ part1: "", part2: "", part3: "" });
+      if (error) throw error;
 
-      toast({
-        title: "Gasto agregado",
-        description: "El gasto ha sido guardado exitosamente",
-      });
+      if (data) {
+        await addExpense({
+          description,
+          costCenter,
+          amount: parseFloat(amount),
+          date,
+          ddiCode: formattedDdiCode,
+        });
+
+        // Reset form
+        setDescription("");
+        setCostCenter("");
+        setAmount("");
+        setDate(new Date().toISOString().split("T")[0]);
+        setDdiCode({ part1: "", part2: "", part3: "" });
+
+        toast({
+          title: "Gasto agregado",
+          description: "El gasto ha sido guardado exitosamente",
+        });
+      }
     } catch (error) {
       console.error('Error al guardar el gasto:', error);
       toast({
