@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useExpenseCRUD } from "./useExpenseCRUD";
 import { useExpenseStorage } from "./useExpenseStorage";
 
@@ -21,8 +22,16 @@ export const useExpenseList = () => {
     handleViewImage
   } = useExpenseStorage();
 
+  const [selectedCostCenter, setSelectedCostCenter] = useState<string>("");
+
+  const filteredExpenses = selectedCostCenter
+    ? expenses.filter(expense => expense.costCenter === selectedCostCenter)
+    : expenses;
+
+  const uniqueCostCenters = Array.from(new Set(expenses.map(expense => expense.costCenter)));
+
   return {
-    expenses,
+    expenses: filteredExpenses,
     isLoading,
     isEditDialogOpen,
     setIsEditDialogOpen,
@@ -34,6 +43,9 @@ export const useExpenseList = () => {
     handleDelete,
     handleEdit,
     handleSaveEdit,
-    handleViewImage
+    handleViewImage,
+    costCenters: uniqueCostCenters,
+    selectedCostCenter,
+    setSelectedCostCenter
   };
 };

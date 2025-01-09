@@ -2,6 +2,7 @@ import { ExpenseTable } from "./expense/ExpenseTable";
 import { ImagePreviewDialog } from "./expense/ImagePreviewDialog";
 import { EditExpenseDialog } from "./expense/EditExpenseDialog";
 import { useExpenseList } from "./expense/hooks/useExpenseList";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const ExpenseList = () => {
   const {
@@ -17,10 +18,11 @@ export const ExpenseList = () => {
     handleDelete,
     handleEdit,
     handleSaveEdit,
-    handleViewImage
+    handleViewImage,
+    costCenters,
+    selectedCostCenter,
+    setSelectedCostCenter
   } = useExpenseList();
-
-  const costCenters = ["600-500-140", "600-600-300"];
 
   if (isLoading) {
     return <div className="text-center py-4">Cargando gastos...</div>;
@@ -28,7 +30,29 @@ export const ExpenseList = () => {
 
   return (
     <div>
-      <h2 className="text-lg font-semibold mb-4">Lista de Gastos</h2>
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Lista de Gastos</h2>
+        <div className="w-72">
+          <Select
+            value={selectedCostCenter}
+            onValueChange={setSelectedCostCenter}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Filtrar por centro de costo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="">Todos</SelectItem>
+                {costCenters.map((center) => (
+                  <SelectItem key={center} value={center}>
+                    {center}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
       
       <ExpenseTable
         expenses={expenses}
