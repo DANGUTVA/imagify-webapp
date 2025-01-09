@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { DDICodeInput } from "./expense/DDICodeInput";
 import { CostCenterSelect } from "./expense/CostCenterSelect";
 import { ExpenseFormActions } from "./expense/ExpenseFormActions";
-import { supabase } from "@/integrations/supabase/client";
 
 export const ExpenseForm = () => {
   const { addExpense } = useExpenses();
@@ -90,7 +89,6 @@ export const ExpenseForm = () => {
     const formattedDdiCode = `DDI-${ddiCode.part1}-${ddiCode.part2}-${ddiCode.part3}`;
 
     try {
-      // Add to local state through context
       await addExpense({
         description,
         costCenter,
@@ -164,7 +162,7 @@ export const ExpenseForm = () => {
           />
         </div>
 
-        <ExpenseFormActions onSubmit={handleSubmit} />
+        <ExpenseFormActions onSubmit={() => handleSubmit} />
       </form>
     </Card>
   );

@@ -7,8 +7,8 @@ import { Expense } from "@/types/expense";
 interface ExpenseTableProps {
   expenses: Expense[];
   onEdit: (expense: Expense) => void;
-  onDelete: (id: number) => void;
-  onViewImage: (id: number) => void;
+  onDelete: (id: string) => void;
+  onViewImage: (id: string) => void;
 }
 
 export const ExpenseTable = ({ expenses, onEdit, onDelete, onViewImage }: ExpenseTableProps) => {

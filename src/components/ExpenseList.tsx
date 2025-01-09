@@ -37,9 +37,9 @@ export const ExpenseList = () => {
       data.forEach(expense => {
         const expenseWithDDI = {
           ...expense,
-          ddiCode: expense.ddiCode || 'DDI-000-000-000' // Provide default DDI code if missing
-        } as Expense;
-        editExpense(expenseWithDDI);
+          ddiCode: expense.ddiCode || 'DDI-000-000-000'
+        };
+        editExpense(expenseWithDDI as Expense);
       });
     } catch (error) {
       console.error('Error fetching expenses:', error);
