@@ -22,11 +22,11 @@ export const useExpenseList = () => {
     handleViewImage
   } = useExpenseStorage();
 
-  const [selectedCostCenter, setSelectedCostCenter] = useState<string>("");
+  const [selectedCostCenter, setSelectedCostCenter] = useState<string>("all");
 
-  const filteredExpenses = selectedCostCenter
-    ? expenses.filter(expense => expense.costCenter === selectedCostCenter)
-    : expenses;
+  const filteredExpenses = selectedCostCenter === "all"
+    ? expenses
+    : expenses.filter(expense => expense.costCenter === selectedCostCenter);
 
   const uniqueCostCenters = Array.from(new Set(expenses.map(expense => expense.costCenter)));
 

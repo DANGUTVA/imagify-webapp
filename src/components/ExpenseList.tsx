@@ -42,7 +42,7 @@ export const ExpenseList = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
-                <SelectItem value="">Todos</SelectItem>
+                <SelectItem value="all">Todos</SelectItem>
                 {costCenters.map((center) => (
                   <SelectItem key={center} value={center}>
                     {center}
