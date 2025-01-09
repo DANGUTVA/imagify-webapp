@@ -16,6 +16,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete, onViewImage }: Expens
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-[50px]">#</TableHead>
           <TableHead>Fecha</TableHead>
           <TableHead>Descripción</TableHead>
           <TableHead>Centro de Costo</TableHead>
@@ -25,8 +26,9 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete, onViewImage }: Expens
         </TableRow>
       </TableHeader>
       <TableBody>
-        {expenses.map((expense) => (
+        {expenses.map((expense, index) => (
           <TableRow key={expense.id}>
+            <TableCell>{index + 1}</TableCell>
             <TableCell>{formatDate(expense.date)}</TableCell>
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.costCenter}</TableCell>
