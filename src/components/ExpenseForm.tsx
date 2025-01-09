@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -28,8 +28,12 @@ export const ExpenseForm = () => {
     part1: "",
     part2: "",
     part3: "",
-    part4: "",
   });
+
+  // Referencias para los campos de DDI
+  const ddiPart1Ref = useRef<HTMLInputElement>(null);
+  const ddiPart2Ref = useRef<HTMLInputElement>(null);
+  const ddiPart3Ref = useRef<HTMLInputElement>(null);
 
   const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
 
@@ -56,6 +60,26 @@ export const ExpenseForm = () => {
     }
   };
 
+  const handleDDIInputChange = (
+    part: 'part1' | 'part2' | 'part3',
+    value: string,
+    maxLength: number,
+    nextRef?: React.RefObject<HTMLInputElement>
+  ) => {
+    // Solo permitir números
+    const numericValue = value.replace(/\D/g, '');
+    
+    setDdiCode(prev => ({
+      ...prev,
+      [part]: numericValue
+    }));
+
+    // Avanzar al siguiente campo si se alcanza la longitud máxima
+    if (numericValue.length >= maxLength && nextRef?.current) {
+      nextRef.current.focus();
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !costCenter || !amount) return;
@@ -74,7 +98,7 @@ export const ExpenseForm = () => {
     setCostCenter("");
     setAmount("");
     setDate(new Date().toISOString().split("T")[0]);
-    setDdiCode({ part1: "", part2: "", part3: "", part4: "" });
+    setDdiCode({ part1: "", part2: "", part3: "" });
   };
 
   return (
@@ -135,21 +159,24 @@ export const ExpenseForm = () => {
             className="w-16"
             maxLength={4}
             value={ddiCode.part1}
-            onChange={(e) => setDdiCode({ ...ddiCode, part1: e.target.value })}
+            onChange={(e) => handleDDIInputChange('part1', e.target.value, 4, ddiPart2Ref)}
+            ref={ddiPart1Ref}
           />
           <span>-</span>
           <Input
             className="w-12"
             maxLength={2}
             value={ddiCode.part2}
-            onChange={(e) => setDdiCode({ ...ddiCode, part2: e.target.value })}
+            onChange={(e) => handleDDIInputChange('part2', e.target.value, 2, ddiPart3Ref)}
+            ref={ddiPart2Ref}
           />
           <span>-</span>
           <Input
             className="w-12"
             maxLength={2}
             value={ddiCode.part3}
-            onChange={(e) => setDdiCode({ ...ddiCode, part3: e.target.value })}
+            onChange={(e) => handleDDIInputChange('part3', e.target.value, 2)}
+            ref={ddiPart3Ref}
           />
         </div>
 
