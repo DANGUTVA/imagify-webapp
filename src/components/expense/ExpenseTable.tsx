@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Eye, Pencil, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import { Expense } from "@/types/expense";
 
 interface ExpenseTableProps {
@@ -27,7 +27,7 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete, onViewImage }: Expens
       <TableBody>
         {expenses.map((expense) => (
           <TableRow key={expense.id}>
-            <TableCell>{expense.date}</TableCell>
+            <TableCell>{formatDate(expense.date)}</TableCell>
             <TableCell>{expense.description}</TableCell>
             <TableCell>{expense.costCenter}</TableCell>
             <TableCell>{expense.ddiCode}</TableCell>
