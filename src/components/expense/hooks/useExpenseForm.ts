@@ -11,8 +11,6 @@ export const useExpenseForm = () => {
   const [costCenter, setCostCenter] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newCostCenter, setNewCostCenter] = useState("");
   const [ddiCode, setDdiCode] = useState({
     part1: "",
     part2: "",
@@ -20,28 +18,6 @@ export const useExpenseForm = () => {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [costCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
-
-  const handleAddNewCostCenter = () => {
-    if (newCostCenter.trim()) {
-      if (costCenters.includes(newCostCenter.trim())) {
-        toast({
-          title: "Error",
-          description: "Este centro de costo ya existe",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setCostCenter(newCostCenter.trim());
-      setNewCostCenter("");
-      setIsAddingNew(false);
-      
-      toast({
-        title: "Centro de costo agregado",
-        description: "El nuevo centro de costo ha sido agregado exitosamente",
-      });
-    }
-  };
 
   const handleDDIInputChange = (
     part: 'part1' | 'part2' | 'part3',
@@ -62,11 +38,7 @@ export const useExpenseForm = () => {
   };
 
   const handleCostCenterChange = (value: string) => {
-    if (value === "new") {
-      setIsAddingNew(true);
-    } else {
-      setCostCenter(value);
-    }
+    setCostCenter(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,7 +71,6 @@ export const useExpenseForm = () => {
       if (error) throw error;
 
       if (data) {
-        // Actualizamos el estado global con los nuevos datos
         const { data: allExpenses } = await supabase
           .from('expenses')
           .select('*')
@@ -109,7 +80,6 @@ export const useExpenseForm = () => {
           setExpenses(allExpenses);
         }
 
-        // Reset form
         setDescription("");
         setCostCenter("");
         setAmount("");
@@ -141,13 +111,9 @@ export const useExpenseForm = () => {
     setAmount,
     date,
     setDate,
-    isAddingNew,
-    newCostCenter,
-    setNewCostCenter,
     ddiCode,
     isSubmitting,
     costCenters,
-    handleAddNewCostCenter,
     handleDDIInputChange,
     handleCostCenterChange,
     handleSubmit
