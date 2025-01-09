@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,20 +18,71 @@ export const ExpenseList = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
 
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const fetchExpenses = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('expenses')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw error;
+      }
+
+      // Update the context with the fetched expenses
+      data.forEach(expense => {
+        editExpense(expense);
+      });
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar los gastos",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDelete = async (id: number) => {
     try {
-      await supabase.storage
-        .from('receipts')
-        .remove([`receipt-${id}.jpg`]);
-    } catch (error) {
-      console.error('Error al eliminar la imagen:', error);
-    }
+      // Delete from Supabase
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', id);
 
-    deleteExpense(id);
-    toast({
-      title: "Gasto eliminado",
-      description: "El gasto ha sido eliminado exitosamente",
-    });
+      if (error) {
+        throw error;
+      }
+
+      // Delete associated image if exists
+      try {
+        await supabase.storage
+          .from('receipts')
+          .remove([`receipt-${id}.jpg`]);
+      } catch (error) {
+        console.error('Error al eliminar la imagen:', error);
+      }
+
+      // Delete from local state
+      deleteExpense(id);
+      
+      toast({
+        title: "Gasto eliminado",
+        description: "El gasto ha sido eliminado exitosamente",
+      });
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el gasto",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = (expense: Expense) => {
@@ -39,14 +90,40 @@ export const ExpenseList = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = (updatedExpense: Expense) => {
-    editExpense(updatedExpense);
-    setIsEditDialogOpen(false);
-    setEditingExpense(null);
-    toast({
-      title: "Gasto actualizado",
-      description: "El gasto ha sido actualizado exitosamente",
-    });
+  const handleSaveEdit = async (updatedExpense: Expense) => {
+    try {
+      // Update in Supabase
+      const { error } = await supabase
+        .from('expenses')
+        .update({
+          description: updatedExpense.description,
+          costCenter: updatedExpense.costCenter,
+          amount: updatedExpense.amount,
+          date: updatedExpense.date,
+        })
+        .eq('id', updatedExpense.id);
+
+      if (error) {
+        throw error;
+      }
+
+      // Update local state
+      editExpense(updatedExpense);
+      setIsEditDialogOpen(false);
+      setEditingExpense(null);
+      
+      toast({
+        title: "Gasto actualizado",
+        description: "El gasto ha sido actualizado exitosamente",
+      });
+    } catch (error) {
+      console.error('Error updating expense:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el gasto",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleViewImage = async (expenseId: number) => {
