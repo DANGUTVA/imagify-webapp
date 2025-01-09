@@ -34,12 +34,18 @@ export const ExpenseList = () => {
       }
 
       // Update the context with the fetched expenses
-      data.forEach(expense => {
-        const expenseWithDDI = {
-          ...expense,
-          ddiCode: expense.ddiCode || 'DDI-000-000-000'
+      data?.forEach(expense => {
+        // Create a complete expense object with all required fields
+        const completeExpense: Expense = {
+          id: expense.id,
+          description: expense.description || '',
+          costCenter: expense.costCenter,
+          amount: expense.amount || 0,
+          date: expense.date || '',
+          ddiCode: 'DDI-000-000-000', // Default DDI code
+          created_at: expense.created_at || new Date().toISOString()
         };
-        editExpense(expenseWithDDI as Expense);
+        editExpense(completeExpense);
       });
     } catch (error) {
       console.error('Error fetching expenses:', error);
