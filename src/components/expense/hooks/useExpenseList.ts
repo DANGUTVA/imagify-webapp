@@ -26,17 +26,20 @@ export const useExpenseList = () => {
 
       if (error) throw error;
 
-      data?.forEach(expense => {
-        const completeExpense: Expense = {
-          id: expense.id,
-          description: expense.description || '',
-          costCenter: expense.costCenter,
-          amount: expense.amount || 0,
-          date: expense.date || '',
-          ddiCode: expense.ddiCode || 'DDI-000-000-000',
-          created_at: expense.created_at || new Date().toISOString()
-        };
-        editExpense(completeExpense);
+      // Transformamos los datos y actualizamos el estado
+      const transformedExpenses = data?.map(expense => ({
+        id: expense.id,
+        description: expense.description || '',
+        costCenter: expense.costCenter,
+        amount: expense.amount || 0,
+        date: expense.date || '',
+        ddiCode: expense.ddiCode || 'DDI-000-000-000',
+        created_at: expense.created_at || new Date().toISOString()
+      }));
+
+      // Actualizamos cada gasto en el estado global
+      transformedExpenses?.forEach(expense => {
+        editExpense(expense);
       });
     } catch (error) {
       console.error('Error fetching expenses:', error);
