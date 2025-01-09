@@ -1,13 +1,35 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { ExpenseProvider } from "@/context/ExpenseContext";
+import { ExpenseMetrics } from "@/components/ExpenseMetrics";
+import { ExpenseForm } from "@/components/ExpenseForm";
+import { ExpenseList } from "@/components/ExpenseList";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+    <ExpenseProvider>
+      <div className="container mx-auto py-8 px-4">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-center mb-4">
+            Gastos Mensuales PROMED
+          </h1>
+          
+          <div className="flex items-center justify-center gap-4">
+            <Button variant="ghost" size="icon">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <span className="text-lg">Enero 2025</span>
+            <Button variant="ghost" size="icon">
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        <ExpenseMetrics />
+        <ExpenseForm />
+        <ExpenseList />
       </div>
-    </div>
+    </ExpenseProvider>
   );
 };
 
