@@ -18,7 +18,7 @@ export const useMonthlyBudget = () => {
         .select('amount')
         .eq('year', date.getFullYear())
         .eq('month', date.getMonth() + 1)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       setBudget(data?.amount || null);
