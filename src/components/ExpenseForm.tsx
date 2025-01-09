@@ -7,6 +7,7 @@ import { Camera } from "lucide-react";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -18,6 +19,9 @@ export const ExpenseForm = () => {
   const [costCenter, setCostCenter] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+
+  // Idealmente, esto debería venir del contexto global o una API
+  const costCenters = ["600-500-140", "600-600-300"];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,8 +58,13 @@ export const ExpenseForm = () => {
               <SelectValue placeholder="Seleccione un centro de costo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="600-500-140">600-500-140</SelectItem>
-              <SelectItem value="600-600-300">600-600-300</SelectItem>
+              <SelectGroup>
+                {costCenters.map((center) => (
+                  <SelectItem key={center} value={center}>
+                    {center}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             </SelectContent>
           </Select>
         </div>
