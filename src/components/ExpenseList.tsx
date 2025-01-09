@@ -9,9 +9,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Trash2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Eye, Pencil, Trash2, Check } from "lucide-react";
 import { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export const ExpenseList = () => {
   const { expenses, deleteExpense } = useExpenses();
@@ -38,23 +43,24 @@ export const ExpenseList = () => {
     <Card className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Lista de Gastos</h2>
-        <div className="flex gap-4">
-          {costCenters.map((costCenter) => (
-            <div key={costCenter} className="flex items-center space-x-2">
-              <Checkbox
-                id={costCenter}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              Centros de Costo ({selectedCostCenters.length})
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            {costCenters.map((costCenter) => (
+              <DropdownMenuCheckboxItem
+                key={costCenter}
                 checked={selectedCostCenters.includes(costCenter)}
                 onCheckedChange={() => handleCostCenterChange(costCenter)}
-              />
-              <label
-                htmlFor={costCenter}
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
                 {costCenter}
-              </label>
-            </div>
-          ))}
-        </div>
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="overflow-x-auto">
         <Table>
