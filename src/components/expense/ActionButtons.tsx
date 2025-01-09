@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Camera } from "lucide-react";
 
 interface ActionButtonsProps {
-  onSubmit: () => void;
+  onSubmit: (e: React.FormEvent) => void;
   onCameraClick: () => void;
 }
 

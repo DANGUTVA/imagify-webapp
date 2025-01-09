@@ -1,7 +1,7 @@
 import { useCameraHandling } from "../useCameraHandling";
 
 interface UseExpenseFormActionsProps {
-  onSubmit: () => void;
+  onSubmit: (e: React.FormEvent) => void;
 }
 
 export const useExpenseFormActions = ({ onSubmit }: UseExpenseFormActionsProps) => {
@@ -36,8 +36,8 @@ export const useExpenseFormActions = ({ onSubmit }: UseExpenseFormActionsProps) 
     setIsOpen(false);
   };
 
-  const handleSubmit = () => {
-    onSubmit();
+  const handleSubmit = (e: React.FormEvent) => {
+    onSubmit(e);
     resetState();
   };
 
