@@ -14,7 +14,8 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
     videoRef,
     capturedImage,
     setCapturedImage,
-    handleCapture
+    handleCapture,
+    resetState
   } = useCameraHandling();
 
   const handleCameraClick = () => {
@@ -38,10 +39,15 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
     setIsOpen(false);
   };
 
+  const handleSubmit = () => {
+    onSubmit();
+    resetState();
+  };
+
   return (
     <div className="flex flex-col gap-4">
       <ActionButtons 
-        onSubmit={onSubmit}
+        onSubmit={handleSubmit}
         onCameraClick={handleCameraClick}
       />
 

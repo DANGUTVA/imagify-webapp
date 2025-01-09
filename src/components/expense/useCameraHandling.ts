@@ -15,6 +15,12 @@ export const useCameraHandling = () => {
     }
   };
 
+  const resetState = () => {
+    setCapturedImage(null);
+    stopCamera();
+    setIsOpen(false);
+  };
+
   useEffect(() => {
     if (isOpen && !stream) {
       const constraints = {
@@ -43,9 +49,6 @@ export const useCameraHandling = () => {
           setStream(newStream);
           if (videoRef.current) {
             videoRef.current.srcObject = newStream;
-            videoRef.current.style.display = 'none';
-            videoRef.current.offsetHeight;
-            videoRef.current.style.display = 'block';
           }
         })
         .catch(error => {
@@ -82,6 +85,7 @@ export const useCameraHandling = () => {
         });
 
         stopCamera();
+        setIsOpen(false);
       }
     }
   };
@@ -94,6 +98,7 @@ export const useCameraHandling = () => {
     capturedImage,
     setCapturedImage,
     stopCamera,
-    handleCapture
+    handleCapture,
+    resetState
   };
 };

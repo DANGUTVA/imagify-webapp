@@ -70,6 +70,8 @@ export const ExpenseList = () => {
   const handleViewImage = async (expenseId: number) => {
     try {
       setIsLoadingImage(true);
+      setSelectedImage(null); // Reset previous image
+
       const { data, error } = await supabase.storage
         .from('receipts')
         .createSignedUrl(`receipt-${expenseId}.jpg`, 60);
@@ -85,6 +87,12 @@ export const ExpenseList = () => {
       }
 
       if (data?.signedUrl) {
+        // Verificar que la imagen existe antes de mostrarla
+        const response = await fetch(data.signedUrl);
+        if (!response.ok) {
+          throw new Error('Imagen no encontrada');
+        }
+        
         setSelectedImage(data.signedUrl);
         setIsImageDialogOpen(true);
       }
@@ -92,7 +100,7 @@ export const ExpenseList = () => {
       console.error('Error:', error);
       toast({
         title: "Error",
-        description: "Ocurrió un error al cargar la imagen",
+        description: "No se encontró la imagen del recibo para este gasto",
         variant: "destructive",
       });
     } finally {
