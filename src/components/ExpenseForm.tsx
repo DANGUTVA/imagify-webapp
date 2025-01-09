@@ -37,7 +37,7 @@ export const ExpenseForm = () => {
   };
 
   return (
-    <Card className="p-6 mb-8">
+    <Card className="p-4 md:p-6 mb-6 md:mb-8">
       <h2 className="text-lg font-semibold mb-4">Agregar Gasto</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -77,7 +77,7 @@ export const ExpenseForm = () => {
           />
         </div>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
           <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
             Agregar Gasto
           </Button>
