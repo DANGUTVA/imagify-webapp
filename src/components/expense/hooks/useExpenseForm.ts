@@ -41,6 +41,40 @@ export const useExpenseForm = () => {
     setCostCenter(value);
   };
 
+  const uploadImage = async (imageData: string, expenseId: string) => {
+    try {
+      // Convertir el base64 a un Blob
+      const base64Data = imageData.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'image/jpeg' });
+
+      // Subir la imagen a Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from('receipts')
+        .upload(`receipt-${expenseId}.jpg`, blob, {
+          contentType: 'image/jpeg',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Error al subir la imagen:', uploadError);
+        throw uploadError;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error en uploadImage:', error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description || !costCenter || !amount) {
@@ -71,6 +105,13 @@ export const useExpenseForm = () => {
       if (error) throw error;
 
       if (data) {
+        // Obtener la imagen del contexto global
+        const capturedImage = (window as any).capturedImage;
+        
+        if (capturedImage) {
+          await uploadImage(capturedImage, data.id);
+        }
+
         const { data: allExpenses } = await supabase
           .from('expenses')
           .select('*')
@@ -85,6 +126,8 @@ export const useExpenseForm = () => {
         setAmount("");
         setDate(new Date().toISOString().split("T")[0]);
         setDdiCode({ part1: "", part2: "", part3: "" });
+        // Limpiar la imagen capturada del contexto global
+        (window as any).capturedImage = null;
 
         toast({
           title: "Gasto agregado",

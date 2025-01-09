@@ -19,6 +19,8 @@ export const useCameraHandling = () => {
     setCapturedImage(null);
     stopCamera();
     setIsOpen(false);
+    // Limpiar la imagen del contexto global
+    (window as any).capturedImage = null;
   };
 
   useEffect(() => {
@@ -78,6 +80,8 @@ export const useCameraHandling = () => {
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/jpeg');
         setCapturedImage(imageData);
+        // Guardar la imagen en el contexto global
+        (window as any).capturedImage = imageData;
         
         toast({
           title: "Imagen capturada",
