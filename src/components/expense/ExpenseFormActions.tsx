@@ -28,28 +28,47 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
 
   useEffect(() => {
     if (isOpen && !stream) {
-      navigator.mediaDevices.getUserMedia({
+      const constraints = {
+        video: {
+          facingMode: { exact: "environment" },
+          width: { ideal: 1920 },
+          height: { ideal: 1080 }
+        }
+      };
+
+      const fallbackConstraints = {
         video: {
           facingMode: "environment",
-          width: { ideal: 4096 },
-          height: { ideal: 3072 }
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
         }
-      })
-      .then(newStream => {
-        setStream(newStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = newStream;
-        }
-      })
-      .catch(error => {
-        console.error('Error al acceder a la cámara:', error);
-        toast({
-          title: "Error",
-          description: "No se pudo acceder a la cámara. Por favor, verifica los permisos.",
-          variant: "destructive",
+      };
+
+      navigator.mediaDevices.getUserMedia(constraints)
+        .catch(() => {
+          console.log('Fallback to basic constraints');
+          return navigator.mediaDevices.getUserMedia(fallbackConstraints);
+        })
+        .then(newStream => {
+          console.log('Camera stream obtained successfully');
+          setStream(newStream);
+          if (videoRef.current) {
+            videoRef.current.srcObject = newStream;
+            // Forzar un reflow del video element
+            videoRef.current.style.display = 'none';
+            videoRef.current.offsetHeight;
+            videoRef.current.style.display = 'block';
+          }
+        })
+        .catch(error => {
+          console.error('Error accessing camera:', error);
+          toast({
+            title: "Error",
+            description: "No se pudo acceder a la cámara. Por favor, verifica los permisos.",
+            variant: "destructive",
+          });
+          setIsOpen(false);
         });
-        setIsOpen(false);
-      });
     }
 
     return () => {
@@ -115,12 +134,12 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
           <DialogHeader>
             <DialogTitle>Capturar Factura</DialogTitle>
           </DialogHeader>
-          <div className="relative flex-1 flex items-center justify-center">
+          <div className="relative flex-1 flex items-center justify-center bg-black">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full h-full object-contain rounded-lg"
+              className="max-w-full max-h-full object-contain rounded-lg"
             />
             <Button
               onClick={handleCapture}
