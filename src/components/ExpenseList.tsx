@@ -88,10 +88,10 @@ export const ExpenseList = () => {
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1 md:gap-2">
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 text-[#8E9196]" />
                     </Button>
                     <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <Pencil className="w-4 h-4" />
+                      <Pencil className="w-4 h-4 text-[#0FA0CE]" />
                     </Button>
                     <Button
                       variant="ghost"
@@ -99,7 +99,7 @@ export const ExpenseList = () => {
                       onClick={() => deleteExpense(expense.id)}
                       className="h-8 w-8"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 text-[#ea384c]" />
                     </Button>
                   </div>
                 </TableCell>
