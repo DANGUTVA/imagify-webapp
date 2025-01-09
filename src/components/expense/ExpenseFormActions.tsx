@@ -27,34 +27,38 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
   };
 
   useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
-
-  const handleCameraClick = async () => {
-    try {
-      const newStream = await navigator.mediaDevices.getUserMedia({
+    if (isOpen && !stream) {
+      navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
           width: { ideal: 4096 },
           height: { ideal: 3072 }
         }
-      });
-
-      setStream(newStream);
-      if (videoRef.current) {
-        videoRef.current.srcObject = newStream;
-      }
-      setIsOpen(true);
-    } catch (error) {
-      console.error('Error al acceder a la cámara:', error);
-      toast({
-        title: "Error",
-        description: "No se pudo acceder a la cámara. Por favor, verifica los permisos.",
-        variant: "destructive",
+      })
+      .then(newStream => {
+        setStream(newStream);
+        if (videoRef.current) {
+          videoRef.current.srcObject = newStream;
+        }
+      })
+      .catch(error => {
+        console.error('Error al acceder a la cámara:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo acceder a la cámara. Por favor, verifica los permisos.",
+          variant: "destructive",
+        });
+        setIsOpen(false);
       });
     }
+
+    return () => {
+      stopCamera();
+    };
+  }, [isOpen]);
+
+  const handleCameraClick = () => {
+    setIsOpen(true);
   };
 
   const handleCapture = () => {
@@ -107,16 +111,16 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
       </div>
 
       <Dialog open={isOpen} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-[90vw]">
+        <DialogContent className="sm:max-w-[90vw] h-[80vh] flex flex-col">
           <DialogHeader>
             <DialogTitle>Capturar Factura</DialogTitle>
           </DialogHeader>
-          <div className="relative">
+          <div className="relative flex-1 flex items-center justify-center">
             <video
               ref={videoRef}
               autoPlay
               playsInline
-              className="w-full rounded-lg"
+              className="w-full h-full object-contain rounded-lg"
             />
             <Button
               onClick={handleCapture}
