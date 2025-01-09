@@ -14,24 +14,20 @@ export const useExpenseStorage = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      // First check if the file exists
-      const { data: fileList, error: listError } = await supabase
+      // Verificar si el archivo existe usando download
+      const { data, error: downloadError } = await supabase
         .storage
         .from('receipts')
-        .list('', {
-          search: `receipt-${expenseId}.jpg`
-        });
+        .download(`receipt-${expenseId}.jpg`);
 
-      if (listError) {
-        throw new Error('Error al buscar la imagen');
-      }
-
-      if (!fileList || fileList.length === 0) {
+      if (downloadError) {
+        console.error('Error al verificar la imagen:', downloadError);
         throw new Error('No se encontró la imagen para este gasto');
       }
 
-      // If file exists, get its public URL
-      const { data: urlData } = supabase.storage
+      // Si llegamos aquí, el archivo existe, obtener la URL pública
+      const { data: urlData } = supabase
+        .storage
         .from('receipts')
         .getPublicUrl(`receipt-${expenseId}.jpg`);
 
