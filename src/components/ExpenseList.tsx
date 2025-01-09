@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Trash2, Filter, Plus } from "lucide-react";
+import { Eye, Pencil, Trash2, Filter } from "lucide-react";
 import { useState } from "react";
 import {
   Select,
@@ -18,42 +18,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  SelectSeparator,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 
 export const ExpenseList = () => {
   const { expenses, deleteExpense } = useExpenses();
   const [selectedCostCenter, setSelectedCostCenter] = useState<string>("all");
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const [newCostCenter, setNewCostCenter] = useState("");
-  const { toast } = useToast();
-  
-  const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
-
-  const handleAddNewCostCenter = () => {
-    if (newCostCenter.trim()) {
-      if (costCenters.includes(newCostCenter.trim())) {
-        toast({
-          title: "Error",
-          description: "Este centro de costo ya existe",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      setCostCenters([...costCenters, newCostCenter.trim()]);
-      setSelectedCostCenter(newCostCenter.trim());
-      setNewCostCenter("");
-      setIsAddingNew(false);
-      
-      toast({
-        title: "Centro de costo agregado",
-        description: "El nuevo centro de costo ha sido agregado exitosamente",
-      });
-    }
-  };
+  const costCenters = ["600-500-140", "600-600-300"];
 
   const filteredExpenses = selectedCostCenter === "all" 
     ? expenses 
@@ -67,13 +37,7 @@ export const ExpenseList = () => {
           <Filter className="w-4 h-4 text-gray-500" />
           <Select
             value={selectedCostCenter}
-            onValueChange={(value) => {
-              if (value === "new") {
-                setIsAddingNew(true);
-              } else {
-                setSelectedCostCenter(value);
-              }
-            }}
+            onValueChange={setSelectedCostCenter}
           >
             <SelectTrigger className="w-full sm:w-[240px] border-blue-500 focus:ring-blue-500">
               <SelectValue placeholder="Seleccione un centro de costo" />
@@ -86,33 +50,11 @@ export const ExpenseList = () => {
                     {costCenter}
                   </SelectItem>
                 ))}
-                <SelectSeparator />
-                <SelectItem value="new" className="text-blue-600">
-                  <Plus className="w-4 h-4 mr-2 inline-block" />
-                  Agregar nuevo centro de costo
-                </SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
       </div>
-
-      {isAddingNew && (
-        <div className="mb-4 flex gap-2">
-          <Input
-            placeholder="Ingrese el nuevo centro de costo"
-            value={newCostCenter}
-            onChange={(e) => setNewCostCenter(e.target.value)}
-            className="w-full sm:w-[240px]"
-          />
-          <Button onClick={handleAddNewCostCenter} className="bg-blue-600 hover:bg-blue-700">
-            Agregar
-          </Button>
-          <Button variant="outline" onClick={() => setIsAddingNew(false)}>
-            Cancelar
-          </Button>
-        </div>
-      )}
 
       <div className="overflow-x-auto -mx-4 md:mx-0">
         <Table>
