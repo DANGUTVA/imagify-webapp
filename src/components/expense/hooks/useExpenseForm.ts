@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useExpenseForm = () => {
-  const { addExpense } = useExpenses();
+  const { setExpenses } = useExpenses();
   const { toast } = useToast();
   
   const [description, setDescription] = useState("");
@@ -99,13 +99,15 @@ export const useExpenseForm = () => {
       if (error) throw error;
 
       if (data) {
-        await addExpense({
-          description,
-          costCenter,
-          amount: parseFloat(amount),
-          date,
-          ddiCode: formattedDdiCode,
-        });
+        // Actualizamos el estado global con los nuevos datos
+        const { data: allExpenses } = await supabase
+          .from('expenses')
+          .select('*')
+          .order('created_at', { ascending: false });
+          
+        if (allExpenses) {
+          setExpenses(allExpenses);
+        }
 
         // Reset form
         setDescription("");
