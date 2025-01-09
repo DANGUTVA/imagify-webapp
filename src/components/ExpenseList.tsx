@@ -19,15 +19,47 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { Expense } from "@/types/expense";
 
 export const ExpenseList = () => {
-  const { expenses, deleteExpense } = useExpenses();
+  const { expenses, deleteExpense, editExpense } = useExpenses();
   const [selectedCostCenter, setSelectedCostCenter] = useState<string>("all");
   const costCenters = ["600-500-140", "600-600-300"];
+  const { toast } = useToast();
+
+  // Estado para el diálogo de edición
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
 
   const filteredExpenses = selectedCostCenter === "all" 
     ? expenses 
     : expenses.filter((expense) => expense.costCenter === selectedCostCenter);
+
+  const handleEditClick = (expense: Expense) => {
+    setEditingExpense(expense);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExpense) return;
+
+    editExpense(editingExpense);
+    setIsEditDialogOpen(false);
+    setEditingExpense(null);
+    toast({
+      title: "Gasto actualizado",
+      description: "El gasto ha sido actualizado exitosamente",
+    });
+  };
 
   return (
     <Card className="p-4 md:p-6">
@@ -90,7 +122,12 @@ export const ExpenseList = () => {
                     <Button variant="ghost" size="icon" className="h-8 w-8">
                       <Eye className="w-4 h-4 text-[#8E9196]" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={() => handleEditClick(expense)}
+                    >
                       <Pencil className="w-4 h-4 text-[#0FA0CE]" />
                     </Button>
                     <Button
@@ -108,6 +145,93 @@ export const ExpenseList = () => {
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Gasto</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleEditSubmit} className="space-y-4">
+            <div>
+              <Input
+                placeholder="Descripción"
+                value={editingExpense?.description || ""}
+                onChange={(e) =>
+                  setEditingExpense(
+                    editingExpense
+                      ? { ...editingExpense, description: e.target.value }
+                      : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Select
+                value={editingExpense?.costCenter}
+                onValueChange={(value) =>
+                  setEditingExpense(
+                    editingExpense
+                      ? { ...editingExpense, costCenter: value }
+                      : null
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Centro de costo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {costCenters.map((center) => (
+                      <SelectItem key={center} value={center}>
+                        {center}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Input
+                type="number"
+                placeholder="Monto"
+                value={editingExpense?.amount || ""}
+                onChange={(e) =>
+                  setEditingExpense(
+                    editingExpense
+                      ? { ...editingExpense, amount: parseFloat(e.target.value) }
+                      : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Input
+                type="date"
+                value={editingExpense?.date || ""}
+                onChange={(e) =>
+                  setEditingExpense(
+                    editingExpense
+                      ? { ...editingExpense, date: e.target.value }
+                      : null
+                  )
+                }
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" className="bg-green-600 hover:bg-green-700">
+                Guardar Cambios
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
