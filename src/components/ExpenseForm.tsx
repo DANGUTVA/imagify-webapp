@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { DDICodeInput } from "./expense/DDICodeInput";
 import { CostCenterSelect } from "./expense/CostCenterSelect";
-import { ExpenseFormActions } from "./expense/ExpenseFormActions";
+import { ExpenseFormActions } from "./ExpenseFormActions";
 import { useExpenseForm } from "./expense/hooks/useExpenseForm";
 
 export const ExpenseForm = () => {
@@ -64,7 +64,7 @@ export const ExpenseForm = () => {
           />
         </div>
 
-        <ExpenseFormActions onSubmit={() => handleSubmit} />
+        <ExpenseFormActions onSubmit={handleSubmit} />
       </form>
     </Card>
   );
