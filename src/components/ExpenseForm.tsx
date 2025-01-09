@@ -3,7 +3,8 @@ import { useExpenses } from "@/context/ExpenseContext";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Camera } from "lucide-react";
+import { Camera, Plus } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
@@ -11,17 +12,44 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  SelectSeparator,
 } from "@/components/ui/select";
 
 export const ExpenseForm = () => {
   const { addExpense } = useExpenses();
+  const { toast } = useToast();
   const [description, setDescription] = useState("");
   const [costCenter, setCostCenter] = useState("");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [newCostCenter, setNewCostCenter] = useState("");
 
   // Idealmente, esto debería venir del contexto global o una API
-  const costCenters = ["600-500-140", "600-600-300"];
+  const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
+
+  const handleAddNewCostCenter = () => {
+    if (newCostCenter.trim()) {
+      if (costCenters.includes(newCostCenter.trim())) {
+        toast({
+          title: "Error",
+          description: "Este centro de costo ya existe",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setCostCenters([...costCenters, newCostCenter.trim()]);
+      setCostCenter(newCostCenter.trim());
+      setNewCostCenter("");
+      setIsAddingNew(false);
+      
+      toast({
+        title: "Centro de costo agregado",
+        description: "El nuevo centro de costo ha sido agregado exitosamente",
+      });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,7 +81,16 @@ export const ExpenseForm = () => {
         </div>
 
         <div>
-          <Select value={costCenter} onValueChange={setCostCenter}>
+          <Select 
+            value={costCenter} 
+            onValueChange={(value) => {
+              if (value === "new") {
+                setIsAddingNew(true);
+              } else {
+                setCostCenter(value);
+              }
+            }}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Seleccione un centro de costo" />
             </SelectTrigger>
@@ -64,10 +101,40 @@ export const ExpenseForm = () => {
                     {center}
                   </SelectItem>
                 ))}
+                <SelectSeparator />
+                <SelectItem value="new" className="text-blue-600">
+                  <Plus className="w-4 h-4 mr-2 inline-block" />
+                  Agregar nuevo centro de costo
+                </SelectItem>
               </SelectGroup>
             </SelectContent>
           </Select>
         </div>
+
+        {isAddingNew && (
+          <div className="flex gap-2">
+            <Input
+              placeholder="Ingrese el nuevo centro de costo"
+              value={newCostCenter}
+              onChange={(e) => setNewCostCenter(e.target.value)}
+              className="flex-1"
+            />
+            <Button 
+              type="button"
+              onClick={handleAddNewCostCenter} 
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Agregar
+            </Button>
+            <Button 
+              type="button"
+              variant="outline" 
+              onClick={() => setIsAddingNew(false)}
+            >
+              Cancelar
+            </Button>
+          </div>
+        )}
 
         <div>
           <Input
