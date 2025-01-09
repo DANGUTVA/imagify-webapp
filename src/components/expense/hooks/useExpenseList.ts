@@ -125,31 +125,18 @@ export const useExpenseList = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      // Primero verificamos si existe el archivo en el bucket
-      const { data: existsData, error: existsError } = await supabase.storage
-        .from('receipts')
-        .list('', {
-          limit: 1,
-          search: `receipt-${expenseId}.jpg`
-        });
-
-      if (existsError) throw existsError;
-
-      // Si no encontramos el archivo, mostramos un error
-      if (!existsData || existsData.length === 0) {
-        throw new Error('No se encontró la imagen para este gasto');
-      }
-
-      // Si el archivo existe, obtenemos su URL pública
-      const { data } = supabase.storage
+      const { data: publicUrl } = supabase.storage
         .from('receipts')
         .getPublicUrl(`receipt-${expenseId}.jpg`);
 
-      if (!data.publicUrl) {
-        throw new Error('Error al obtener la URL de la imagen');
+      // Verificar si la imagen existe haciendo una petición HEAD
+      const response = await fetch(publicUrl.publicUrl, { method: 'HEAD' });
+      
+      if (!response.ok) {
+        throw new Error('No se encontró la imagen para este gasto');
       }
 
-      setSelectedImage(data.publicUrl);
+      setSelectedImage(publicUrl.publicUrl);
     } catch (error) {
       console.error('Error:', error);
       toast({
