@@ -90,25 +90,8 @@ export const ExpenseForm = () => {
     const formattedDdiCode = `DDI-${ddiCode.part1}-${ddiCode.part2}-${ddiCode.part3}`;
 
     try {
-      // Insert the expense into Supabase
-      const { data: expenseData, error: expenseError } = await supabase
-        .from('expenses')
-        .insert({
-          description,
-          costCenter,
-          amount: parseFloat(amount),
-          date,
-          ddiCode: formattedDdiCode,
-        })
-        .select()
-        .single();
-
-      if (expenseError) {
-        throw expenseError;
-      }
-
       // Add to local state through context
-      addExpense({
+      await addExpense({
         description,
         costCenter,
         amount: parseFloat(amount),

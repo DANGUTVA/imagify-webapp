@@ -35,7 +35,11 @@ export const ExpenseList = () => {
 
       // Update the context with the fetched expenses
       data.forEach(expense => {
-        editExpense(expense);
+        const expenseWithDDI = {
+          ...expense,
+          ddiCode: expense.ddiCode || 'DDI-000-000-000' // Provide default DDI code if missing
+        } as Expense;
+        editExpense(expenseWithDDI);
       });
     } catch (error) {
       console.error('Error fetching expenses:', error);
@@ -47,18 +51,8 @@ export const ExpenseList = () => {
     }
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     try {
-      // Delete from Supabase
-      const { error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', id);
-
-      if (error) {
-        throw error;
-      }
-
       // Delete associated image if exists
       try {
         await supabase.storage
@@ -68,8 +62,8 @@ export const ExpenseList = () => {
         console.error('Error al eliminar la imagen:', error);
       }
 
-      // Delete from local state
-      deleteExpense(id);
+      // Delete from local state and database
+      await deleteExpense(id);
       
       toast({
         title: "Gasto eliminado",
@@ -100,6 +94,7 @@ export const ExpenseList = () => {
           costCenter: updatedExpense.costCenter,
           amount: updatedExpense.amount,
           date: updatedExpense.date,
+          ddiCode: updatedExpense.ddiCode
         })
         .eq('id', updatedExpense.id);
 
@@ -114,7 +109,7 @@ export const ExpenseList = () => {
       
       toast({
         title: "Gasto actualizado",
-        description: "El gasto ha sido actualizado exitosamente",
+        description: "El gasto ha sido actualizado exitosamente.",
       });
     } catch (error) {
       console.error('Error updating expense:', error);
@@ -126,7 +121,7 @@ export const ExpenseList = () => {
     }
   };
 
-  const handleViewImage = async (expenseId: number) => {
+  const handleViewImage = async (expenseId: string) => {
     try {
       setIsLoadingImage(true);
       setSelectedImage(null);

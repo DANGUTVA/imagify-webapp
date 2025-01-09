@@ -9,7 +9,7 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const { toast } = useToast();
 
-  const addExpense = async (expense: Omit<Expense, "id">) => {
+  const addExpense = async (expense: Omit<Expense, "id" | "created_at">) => {
     try {
       const { data, error } = await supabase
         .from('expenses')
@@ -36,7 +36,7 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  const deleteExpense = async (id: number) => {
+  const deleteExpense = async (id: string) => {
     try {
       const { error } = await supabase
         .from('expenses')
@@ -64,7 +64,13 @@ export const ExpenseProvider = ({ children }: { children: React.ReactNode }) => 
     try {
       const { error } = await supabase
         .from('expenses')
-        .update(expense)
+        .update({
+          description: expense.description,
+          costCenter: expense.costCenter,
+          amount: expense.amount,
+          date: expense.date,
+          ddiCode: expense.ddiCode
+        })
         .eq('id', expense.id);
 
       if (error) throw error;
