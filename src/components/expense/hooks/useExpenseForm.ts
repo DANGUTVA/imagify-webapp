@@ -41,8 +41,10 @@ export const useExpenseForm = () => {
     setCostCenter(value);
   };
 
-  const uploadImage = async (imageData: string, expenseId: string) => {
+  const uploadImage = async (imageData: string, expenseId: string): Promise<boolean> => {
     try {
+      console.log('Starting image upload for expense:', expenseId);
+      
       // Convertir el base64 a un Blob
       const base64Data = imageData.split(',')[1];
       const byteCharacters = atob(base64Data);
@@ -54,23 +56,26 @@ export const useExpenseForm = () => {
       
       const byteArray = new Uint8Array(byteNumbers);
       const blob = new Blob([byteArray], { type: 'image/jpeg' });
+      const fileName = `receipt-${expenseId}.jpg`;
 
-      // Subir la imagen a Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      console.log('Uploading file:', fileName);
+
+      const { error: uploadError, data } = await supabase.storage
         .from('receipts')
-        .upload(`receipt-${expenseId}.jpg`, blob, {
+        .upload(fileName, blob, {
           contentType: 'image/jpeg',
           upsert: true
         });
 
       if (uploadError) {
-        console.error('Error al subir la imagen:', uploadError);
+        console.error('Error uploading image:', uploadError);
         throw uploadError;
       }
 
+      console.log('Upload successful:', data);
       return true;
     } catch (error) {
-      console.error('Error en uploadImage:', error);
+      console.error('Error in uploadImage:', error);
       throw error;
     }
   };
@@ -90,7 +95,11 @@ export const useExpenseForm = () => {
     const formattedDdiCode = `DDI-${ddiCode.part1}-${ddiCode.part2}-${ddiCode.part3}`;
 
     try {
-      const { data, error } = await supabase
+      // Obtener la imagen del contexto global
+      const capturedImage = (window as any).capturedImage;
+      console.log('Captured image exists:', !!capturedImage);
+
+      const { data: expenseData, error: expenseError } = await supabase
         .from('expenses')
         .insert([{
           description,
@@ -102,14 +111,21 @@ export const useExpenseForm = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (expenseError) throw expenseError;
 
-      if (data) {
-        // Obtener la imagen del contexto global
-        const capturedImage = (window as any).capturedImage;
-        
+      if (expenseData) {
         if (capturedImage) {
-          await uploadImage(capturedImage, data.id);
+          try {
+            await uploadImage(capturedImage, expenseData.id);
+            console.log('Image uploaded successfully');
+          } catch (imageError) {
+            console.error('Error uploading image:', imageError);
+            toast({
+              title: "Advertencia",
+              description: "El gasto se guardó pero hubo un error al subir la imagen",
+              variant: "destructive",
+            });
+          }
         }
 
         const { data: allExpenses } = await supabase
@@ -121,6 +137,7 @@ export const useExpenseForm = () => {
           setExpenses(allExpenses);
         }
 
+        // Limpiar el formulario
         setDescription("");
         setCostCenter("");
         setAmount("");
