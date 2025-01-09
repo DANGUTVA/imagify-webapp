@@ -125,26 +125,32 @@ export const useExpenseList = () => {
       setIsImageDialogOpen(true);
       setSelectedImage(null);
 
-      // Intentamos obtener directamente la URL pública
-      const { data } = supabase.storage
+      // Primero verificamos si existe el archivo en el bucket
+      const { data: files, error: listError } = await supabase.storage
         .from('receipts')
-        .getPublicUrl(`receipt-${expenseId}.jpg`);
+        .list('', {
+          limit: 1,
+          search: `receipt-${expenseId}.jpg`
+        });
 
-      if (!data.publicUrl) {
-        throw new Error('Error al obtener la URL de la imagen');
+      if (listError) {
+        throw new Error('Error al buscar la imagen');
       }
 
-      // Verificamos si la imagen existe haciendo una petición HEAD
-      const response = await fetch(data.publicUrl, { 
-        method: 'HEAD',
-        cache: 'no-cache'
-      });
-
-      if (!response.ok) {
+      if (!files || files.length === 0) {
         throw new Error('No se encontró la imagen para este gasto');
       }
 
-      setSelectedImage(data.publicUrl);
+      // Si encontramos el archivo, obtenemos su URL pública
+      const { data: urlData } = supabase.storage
+        .from('receipts')
+        .getPublicUrl(`receipt-${expenseId}.jpg`);
+
+      if (!urlData.publicUrl) {
+        throw new Error('Error al obtener la URL de la imagen');
+      }
+
+      setSelectedImage(urlData.publicUrl);
     } catch (error) {
       console.error('Error:', error);
       toast({
