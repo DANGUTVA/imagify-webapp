@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Expense } from "@/types/expense";
 
 export const useExpenseList = () => {
-  const { expenses, deleteExpense, editExpense } = useExpenses();
+  const { expenses, deleteExpense, editExpense, setExpenses } = useExpenses();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
@@ -27,18 +27,17 @@ export const useExpenseList = () => {
       if (error) throw error;
 
       if (data) {
-        data.forEach(expense => {
-          const formattedExpense: Expense = {
-            id: expense.id,
-            description: expense.description || '',
-            costCenter: expense.costCenter,
-            amount: expense.amount || 0,
-            date: expense.date || '',
-            ddiCode: expense.ddiCode || 'DDI-000-000-000',
-            created_at: expense.created_at || new Date().toISOString()
-          };
-          editExpense(formattedExpense);
-        });
+        const formattedExpenses: Expense[] = data.map(expense => ({
+          id: expense.id,
+          description: expense.description || '',
+          costCenter: expense.costCenter,
+          amount: expense.amount || 0,
+          date: expense.date || '',
+          ddiCode: expense.ddiCode || 'DDI-000-000-000',
+          created_at: expense.created_at || new Date().toISOString()
+        }));
+        
+        setExpenses(formattedExpenses);
       }
     } catch (error) {
       console.error('Error fetching expenses:', error);

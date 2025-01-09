@@ -10,6 +10,7 @@ export interface Expense {
 
 export interface ExpenseContextType {
   expenses: Expense[];
+  setExpenses: React.Dispatch<React.SetStateAction<Expense[]>>;
   addExpense: (expense: Omit<Expense, "id" | "created_at">) => void;
   deleteExpense: (id: string) => void;
   editExpense: (expense: Expense) => void;
