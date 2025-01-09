@@ -217,6 +217,19 @@ export const ExpenseList = () => {
                 }
               />
             </div>
+            <div>
+              <Input
+                placeholder="Código DDI"
+                value={editingExpense?.ddiCode || ""}
+                onChange={(e) =>
+                  setEditingExpense(
+                    editingExpense
+                      ? { ...editingExpense, ddiCode: e.target.value }
+                      : null
+                  )
+                }
+              />
+            </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
