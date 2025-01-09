@@ -9,58 +9,52 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Eye, Pencil, Trash2, Check } from "lucide-react";
+import { Eye, Pencil, Trash2, Filter } from "lucide-react";
 import { useState } from "react";
 import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const ExpenseList = () => {
   const { expenses, deleteExpense } = useExpenses();
-  const [selectedCostCenters, setSelectedCostCenters] = useState<string[]>([
-    "600-500-140",
-    "600-600-300",
-  ]);
+  const [selectedCostCenter, setSelectedCostCenter] = useState<string>("all");
 
   const costCenters = ["600-500-140", "600-600-300"];
 
-  const filteredExpenses = expenses.filter((expense) =>
-    selectedCostCenters.includes(expense.costCenter)
-  );
-
-  const handleCostCenterChange = (costCenter: string) => {
-    setSelectedCostCenters((prev) =>
-      prev.includes(costCenter)
-        ? prev.filter((cc) => cc !== costCenter)
-        : [...prev, costCenter]
-    );
-  };
+  const filteredExpenses = selectedCostCenter === "all" 
+    ? expenses 
+    : expenses.filter((expense) => expense.costCenter === selectedCostCenter);
 
   return (
     <Card className="p-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Lista de Gastos</h2>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              Centros de Costo ({selectedCostCenters.length})
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56">
-            {costCenters.map((costCenter) => (
-              <DropdownMenuCheckboxItem
-                key={costCenter}
-                checked={selectedCostCenters.includes(costCenter)}
-                onCheckedChange={() => handleCostCenterChange(costCenter)}
-              >
-                {costCenter}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-gray-500" />
+          <Select
+            value={selectedCostCenter}
+            onValueChange={setSelectedCostCenter}
+          >
+            <SelectTrigger className="w-[240px] border-blue-500 focus:ring-blue-500">
+              <SelectValue placeholder="Todos los centros de costo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">Todos los centros de costo</SelectItem>
+                {costCenters.map((costCenter) => (
+                  <SelectItem key={costCenter} value={costCenter}>
+                    {costCenter}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <Table>
