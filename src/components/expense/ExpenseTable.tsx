@@ -39,21 +39,21 @@ export const ExpenseTable = ({ expenses, onEdit, onDelete, onViewImage }: Expens
                   size="icon"
                   onClick={() => onViewImage(expense.id)}
                 >
-                  <Eye className="h-4 w-4" />
+                  <Eye className="h-4 w-4 text-[#8E9196]" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onEdit(expense)}
                 >
-                  <Pencil className="h-4 w-4" />
+                  <Pencil className="h-4 w-4 text-[#0FA0CE]" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={() => onDelete(expense.id)}
                 >
-                  <Trash className="h-4 w-4" />
+                  <Trash className="h-4 w-4 text-[#ea384c]" />
                 </Button>
               </div>
             </TableCell>
