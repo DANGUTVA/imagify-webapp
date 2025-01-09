@@ -28,6 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Expense } from "@/types/expense";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ExpenseList = () => {
   const { expenses, deleteExpense, editExpense } = useExpenses();
@@ -38,6 +39,11 @@ export const ExpenseList = () => {
   // Estado para el diálogo de edición
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+
+  // Estado para el diálogo de visualización de imagen
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isLoadingImage, setIsLoadingImage] = useState(false);
 
   const filteredExpenses = selectedCostCenter === "all" 
     ? expenses 
@@ -59,6 +65,39 @@ export const ExpenseList = () => {
       title: "Gasto actualizado",
       description: "El gasto ha sido actualizado exitosamente",
     });
+  };
+
+  const handleViewImage = async (expenseId: number) => {
+    try {
+      setIsLoadingImage(true);
+      const { data, error } = await supabase.storage
+        .from('receipts')
+        .createSignedUrl(`receipt-${expenseId}.jpg`, 60);
+
+      if (error) {
+        console.error('Error al obtener la imagen:', error);
+        toast({
+          title: "Error",
+          description: "No se pudo cargar la imagen del recibo",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data?.signedUrl) {
+        setSelectedImage(data.signedUrl);
+        setIsImageDialogOpen(true);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "Ocurrió un error al cargar la imagen",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingImage(false);
+    }
   };
 
   return (
@@ -119,7 +158,13 @@ export const ExpenseList = () => {
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-1 md:gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={() => handleViewImage(expense.id)}
+                      disabled={isLoadingImage}
+                    >
                       <Eye className="w-4 h-4 text-[#8E9196]" />
                     </Button>
                     <Button 
@@ -146,6 +191,7 @@ export const ExpenseList = () => {
         </Table>
       </div>
 
+      {/* Diálogo de edición */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -243,6 +289,24 @@ export const ExpenseList = () => {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Diálogo para mostrar la imagen */}
+      <Dialog open={isImageDialogOpen} onOpenChange={setIsImageDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Recibo del Gasto</DialogTitle>
+          </DialogHeader>
+          <div className="relative w-full aspect-[3/4] rounded-lg overflow-hidden">
+            {selectedImage && (
+              <img
+                src={selectedImage}
+                alt="Recibo del gasto"
+                className="w-full h-full object-contain"
+              />
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </Card>
