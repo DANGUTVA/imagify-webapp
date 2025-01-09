@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Camera } from "lucide-react";
+import { Camera, Trash2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -18,6 +18,7 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
 
   const stopCamera = () => {
     if (stream) {
@@ -54,7 +55,6 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
           setStream(newStream);
           if (videoRef.current) {
             videoRef.current.srcObject = newStream;
-            // Forzar un reflow del video element
             videoRef.current.style.display = 'none';
             videoRef.current.offsetHeight;
             videoRef.current.style.display = 'block';
@@ -77,6 +77,7 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
   }, [isOpen]);
 
   const handleCameraClick = () => {
+    setCapturedImage(null);
     setIsOpen(true);
   };
 
@@ -90,17 +91,28 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
       if (context) {
         context.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/jpeg');
-        console.log('Imagen capturada:', imageData);
+        setCapturedImage(imageData);
         
         toast({
           title: "Imagen capturada",
           description: "La imagen de la factura ha sido capturada exitosamente",
         });
 
-        setIsOpen(false);
         stopCamera();
       }
     }
+  };
+
+  const handleRetake = () => {
+    setCapturedImage(null);
+    if (!stream) {
+      setIsOpen(true);
+    }
+  };
+
+  const handleDeleteImage = () => {
+    setCapturedImage(null);
+    setIsOpen(false);
   };
 
   const handleDialogClose = () => {
@@ -110,23 +122,57 @@ export const ExpenseFormActions = ({ onSubmit }: ExpenseFormActionsProps) => {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button 
-          type="submit" 
-          className="flex-1 bg-green-600 hover:bg-green-700"
-          onClick={onSubmit}
-        >
-          Agregar Gasto
-        </Button>
-        <Button 
-          type="button" 
-          variant="outline" 
-          className="bg-blue-600 text-white hover:bg-blue-700"
-          onClick={handleCameraClick}
-        >
-          <Camera className="w-4 h-4 mr-2" />
-          Escanear Factura
-        </Button>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button 
+            type="submit" 
+            className="flex-1 bg-green-600 hover:bg-green-700"
+            onClick={onSubmit}
+          >
+            Agregar Gasto
+          </Button>
+          <Button 
+            type="button" 
+            variant="outline" 
+            className="bg-blue-600 text-white hover:bg-blue-700"
+            onClick={handleCameraClick}
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Escanear Factura
+          </Button>
+        </div>
+
+        {capturedImage && (
+          <div className="relative w-full max-w-[200px] mx-auto">
+            <img 
+              src={capturedImage} 
+              alt="Vista previa de la factura" 
+              className="w-full h-auto rounded-lg shadow-md"
+            />
+            <div className="flex gap-2 mt-2 justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleRetake}
+                className="bg-blue-600 text-white hover:bg-blue-700"
+              >
+                <RefreshCw className="w-4 h-4 mr-1" />
+                Repetir
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteImage}
+                className="bg-red-600 text-white hover:bg-red-700"
+              >
+                <Trash2 className="w-4 h-4 mr-1" />
+                Eliminar
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={isOpen} onOpenChange={handleDialogClose}>
