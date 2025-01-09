@@ -36,11 +36,8 @@ export const ExpenseList = () => {
   const costCenters = ["600-500-140", "600-600-300"];
   const { toast } = useToast();
 
-  // Estado para el diálogo de edición
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-
-  // Estado para el diálogo de visualización de imagen
   const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isLoadingImage, setIsLoadingImage] = useState(false);
@@ -70,32 +67,40 @@ export const ExpenseList = () => {
   const handleViewImage = async (expenseId: number) => {
     try {
       setIsLoadingImage(true);
-      setSelectedImage(null); // Reset previous image
+      setSelectedImage(null);
 
-      const { data, error } = await supabase.storage
+      // Primero verificamos si el archivo existe
+      const { data: existsData, error: existsError } = await supabase.storage
+        .from('receipts')
+        .list('', {
+          search: `receipt-${expenseId}.jpg`
+        });
+
+      if (existsError) {
+        throw new Error('Error al verificar la imagen');
+      }
+
+      if (!existsData || existsData.length === 0) {
+        throw new Error('No se encontró la imagen');
+      }
+
+      // Si el archivo existe, obtenemos la URL firmada
+      const { data: urlData, error: urlError } = await supabase.storage
         .from('receipts')
         .createSignedUrl(`receipt-${expenseId}.jpg`, 60);
 
-      if (error) {
-        console.error('Error al obtener la imagen:', error);
-        toast({
-          title: "Error",
-          description: "No se pudo cargar la imagen del recibo",
-          variant: "destructive",
-        });
-        return;
+      if (urlError || !urlData?.signedUrl) {
+        throw new Error('Error al obtener la URL de la imagen');
       }
 
-      if (data?.signedUrl) {
-        // Verificar que la imagen existe antes de mostrarla
-        const response = await fetch(data.signedUrl);
-        if (!response.ok) {
-          throw new Error('Imagen no encontrada');
-        }
-        
-        setSelectedImage(data.signedUrl);
-        setIsImageDialogOpen(true);
+      // Verificamos que la URL sea accesible
+      const response = await fetch(urlData.signedUrl);
+      if (!response.ok) {
+        throw new Error('Error al acceder a la imagen');
       }
+
+      setSelectedImage(urlData.signedUrl);
+      setIsImageDialogOpen(true);
     } catch (error) {
       console.error('Error:', error);
       toast({
