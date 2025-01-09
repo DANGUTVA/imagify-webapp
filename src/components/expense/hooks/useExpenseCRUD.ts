@@ -1,14 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Expense } from "@/types/expense";
 
 export const useExpenseCRUD = () => {
-  const { expenses, deleteExpense, editExpense } = useExpenses();
+  const { expenses, setExpenses, deleteExpense, editExpense } = useExpenses();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('expenses')
+          .select('*')
+          .order('date', { ascending: false });
+
+        if (error) throw error;
+
+        setExpenses(data as Expense[]);
+      } catch (error) {
+        console.error('Error fetching expenses:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los gastos",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, [setExpenses, toast]);
 
   const handleDelete = async (id: string) => {
     try {
@@ -79,6 +106,7 @@ export const useExpenseCRUD = () => {
 
   return {
     expenses,
+    isLoading,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editingExpense,

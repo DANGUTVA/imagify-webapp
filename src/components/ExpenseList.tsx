@@ -6,6 +6,7 @@ import { useExpenseList } from "./expense/hooks/useExpenseList";
 export const ExpenseList = () => {
   const {
     expenses,
+    isLoading,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editingExpense,
@@ -20,6 +21,10 @@ export const ExpenseList = () => {
   } = useExpenseList();
 
   const costCenters = ["600-500-140", "600-600-300"];
+
+  if (isLoading) {
+    return <div className="text-center py-4">Cargando gastos...</div>;
+  }
 
   return (
     <div>

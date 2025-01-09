@@ -4,6 +4,7 @@ import { useExpenseStorage } from "./useExpenseStorage";
 export const useExpenseList = () => {
   const {
     expenses,
+    isLoading,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editingExpense,
@@ -22,6 +23,7 @@ export const useExpenseList = () => {
 
   return {
     expenses,
+    isLoading,
     isEditDialogOpen,
     setIsEditDialogOpen,
     editingExpense,
