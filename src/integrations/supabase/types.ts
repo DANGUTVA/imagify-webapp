@@ -15,6 +15,7 @@ export type Database = {
           costCenter: string
           created_at: string | null
           date: string | null
+          ddiCode: string | null
           description: string | null
           id: string
         }
@@ -23,6 +24,7 @@ export type Database = {
           costCenter: string
           created_at?: string | null
           date?: string | null
+          ddiCode?: string | null
           description?: string | null
           id?: string
         }
@@ -31,6 +33,7 @@ export type Database = {
           costCenter?: string
           created_at?: string | null
           date?: string | null
+          ddiCode?: string | null
           description?: string | null
           id?: string
         }
