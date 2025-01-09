@@ -1,19 +1,11 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useExpenses } from "@/context/ExpenseContext";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Camera, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectSeparator,
-} from "@/components/ui/select";
+import { DDICodeInput } from "./expense/DDICodeInput";
+import { CostCenterSelect } from "./expense/CostCenterSelect";
+import { ExpenseFormActions } from "./expense/ExpenseFormActions";
 
 export const ExpenseForm = () => {
   const { addExpense } = useExpenses();
@@ -29,11 +21,6 @@ export const ExpenseForm = () => {
     part2: "",
     part3: "",
   });
-
-  // Referencias para los campos de DDI
-  const ddiPart1Ref = useRef<HTMLInputElement>(null);
-  const ddiPart2Ref = useRef<HTMLInputElement>(null);
-  const ddiPart3Ref = useRef<HTMLInputElement>(null);
 
   const [costCenters, setCostCenters] = useState<string[]>(["600-500-140", "600-600-300"]);
 
@@ -66,7 +53,6 @@ export const ExpenseForm = () => {
     maxLength: number,
     nextRef?: React.RefObject<HTMLInputElement>
   ) => {
-    // Solo permitir números
     const numericValue = value.replace(/\D/g, '');
     
     setDdiCode(prev => ({
@@ -74,9 +60,16 @@ export const ExpenseForm = () => {
       [part]: numericValue
     }));
 
-    // Avanzar al siguiente campo si se alcanza la longitud máxima
     if (numericValue.length >= maxLength && nextRef?.current) {
       nextRef.current.focus();
+    }
+  };
+
+  const handleCostCenterChange = (value: string) => {
+    if (value === "new") {
+      setIsAddingNew(true);
+    } else {
+      setCostCenter(value);
     }
   };
 
@@ -114,34 +107,11 @@ export const ExpenseForm = () => {
         </div>
 
         <div>
-          <Select 
-            value={costCenter} 
-            onValueChange={(value) => {
-              if (value === "new") {
-                setIsAddingNew(true);
-              } else {
-                setCostCenter(value);
-              }
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccione un centro de costo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                {costCenters.map((center) => (
-                  <SelectItem key={center} value={center}>
-                    {center}
-                  </SelectItem>
-                ))}
-                <SelectSeparator />
-                <SelectItem value="new" className="text-blue-600">
-                  <Plus className="w-4 h-4 mr-2 inline-block" />
-                  Agregar nuevo centro de costo
-                </SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <CostCenterSelect 
+            costCenter={costCenter}
+            costCenters={costCenters}
+            onValueChange={handleCostCenterChange}
+          />
         </div>
 
         <div>
@@ -153,32 +123,10 @@ export const ExpenseForm = () => {
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">DDI-</span>
-          <Input
-            className="w-16"
-            maxLength={4}
-            value={ddiCode.part1}
-            onChange={(e) => handleDDIInputChange('part1', e.target.value, 4, ddiPart2Ref)}
-            ref={ddiPart1Ref}
-          />
-          <span>-</span>
-          <Input
-            className="w-12"
-            maxLength={2}
-            value={ddiCode.part2}
-            onChange={(e) => handleDDIInputChange('part2', e.target.value, 2, ddiPart3Ref)}
-            ref={ddiPart2Ref}
-          />
-          <span>-</span>
-          <Input
-            className="w-12"
-            maxLength={2}
-            value={ddiCode.part3}
-            onChange={(e) => handleDDIInputChange('part3', e.target.value, 2)}
-            ref={ddiPart3Ref}
-          />
-        </div>
+        <DDICodeInput 
+          ddiCode={ddiCode}
+          onDDIChange={handleDDIInputChange}
+        />
 
         <div>
           <Input
@@ -188,15 +136,7 @@ export const ExpenseForm = () => {
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button type="submit" className="flex-1 bg-green-600 hover:bg-green-700">
-            Agregar Gasto
-          </Button>
-          <Button type="button" variant="outline" className="bg-blue-600 text-white hover:bg-blue-700">
-            <Camera className="w-4 h-4 mr-2" />
-            Escanear Factura
-          </Button>
-        </div>
+        <ExpenseFormActions onSubmit={() => {}} />
       </form>
     </Card>
   );
