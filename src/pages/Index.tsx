@@ -8,25 +8,24 @@ const Index = () => {
   const { budget, isLoading } = useMonthlyBudget();
 
   return (
-    <ExpenseProvider>
-      <div className="container mx-auto py-4 md:py-8 px-2 md:px-4">
-        <div className="mb-6 md:mb-8">
-          <h1 className="text-xl md:text-2xl font-bold text-center">
-            Gastos Mensuales PROMED
-          </h1>
-        </div>
+    <div className="container mx-auto py-4 md:py-8 px-2 md:px-4">
+      <div className="mb-6 md:mb-8">
+        <h1 className="text-xl md:text-2xl font-bold text-center">
+          Gastos Mensuales PROMED
+        </h1>
+      </div>
 
+      <ExpenseProvider>
         <ExpenseMetrics />
         
-        {/* Solo mostrar el formulario y la lista si hay un presupuesto establecido */}
         {!isLoading && budget !== null && (
           <>
             <ExpenseForm />
             <ExpenseList />
           </>
         )}
-      </div>
-    </ExpenseProvider>
+      </ExpenseProvider>
+    </div>
   );
 };
 
